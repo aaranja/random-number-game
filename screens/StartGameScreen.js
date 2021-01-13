@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import Card from "../components/Card";
 import Input from "../components/Input";
+import * as sg from "../styles/StartGameStyle";
 
 const StartGameScreen = (props) => {
 	// valor introducido
@@ -21,23 +22,28 @@ const StartGameScreen = (props) => {
 	const [selectedNumber, setSelectedNumber] = useState(null);
 	// intentos
 	const [attemps, setAttemps] = useState(5);
-	// numero generado
+	// número a adivinar
 	const [chosenNumber, setChosenNumber] = useState();
 
+	// calcular nuevo numero a adivinar
 	const newGameNumber = () => {
 		setChosenNumber(Math.floor(Math.random() * (99 - 1) + 1));
 	};
 
+	// limpiar todo lo que no sea número
 	const numberInputHandler = (inputText) => {
 		setEnteredValue(inputText.replace(/[^0-9]/g, ""));
 	};
 
+	// iniciar juego con el número elegido
 	const confirmInputHandler = () => {
 		Keyboard.dismiss();
-		if (!confirmed)
-			setChosenNumber(Math.floor(Math.random() * (99 - 1) + 1));
+		// primera vez que se inicia la ronda? genera número a adivinar
+		if (!confirmed) newGameNumber(); 
+		// conseguir la entrada y verificar que sea un número
 		const number = parseInt(enteredValue);
 		if (isNaN(number) || number <= 0 || number > 99) {
+			// mandar alerta si no es un número
 			Alert.alert(
 				"Introduce un número váilido",
 				"el numero debe estar entre 1 y 99",
@@ -52,31 +58,28 @@ const StartGameScreen = (props) => {
 			return;
 		}
 
-		setConfirmed(true);
-		setSelectedNumber(number);
-		setEnteredValue("");
-		setAttemps(attemps - 1);
+		setConfirmed(true);			// marcar ronda como iniciada
+		setSelectedNumber(number);	// guardar número que se ha elegido
+		setEnteredValue("");		// limpiar entrada
+		setAttemps(attemps - 1);	// reducir en 1 los intentos
 	};
 
-	const resetInputHandler = () => {
-		setEnteredValue("");
-	};
-
+	// resetear la ronda
 	const resetGame = () => {
 		Keyboard.dismiss();
 		setEnteredValue("");
 		setAttemps(5);
-		resetInputHandler;
 		setSelectedNumber(null);
 		setConfirmed(false);
 		setChosenNumber(0);
 	};
 
-	let attempsOutput;
-	let confirmedOutput;
-	var distancia = "";
-	let win = false;
+	let attempsOutput;		// salida de intentos disponibles
+	let confirmedOutput;	// mostrar número elegido
+	var distancia = "";		// disntacia del número a adivinar
 
+	// solo si se ha confirmado un nuevo valor elegido
+	// comprobar el estado del turno
 	if (confirmed) {
 		confirmedOutput = <Text>Número elegido: {selectedNumber}</Text>;
 		if (
@@ -102,16 +105,18 @@ const StartGameScreen = (props) => {
 				Keyboard.dismiss();
 			}}
 		>
-			<View style={style.screen}>
-				<Card style={style.card}>
+			<View style={sg.style.screen}>
+				<Card style={sg.style.card}>
+			
 					{selectedNumber === chosenNumber ? (
+						/* si el número es igual, mostrar texto de que ha ganado*/
 						<Fragment>
-							<Text style={style.title}>Haz ganado!!</Text>
-							<Text style={style.subtitle}>
+							<Text style={sg.style.title}>Haz ganado!!</Text>
+							<Text style={sg.style.subtitle}>
 								Con solo {attemps} intentos restantes!
 							</Text>
-							<Text style={style.title}>{selectedNumber}</Text>
-							<View style={style.buttonResetGame}>
+							<Text style={sg.style.title}>{selectedNumber}</Text>
+							<View style={sg.style.buttonResetGame}>
 								<Button
 									title={"Volver a jugar! :)"}
 									onPress={resetGame}
@@ -119,14 +124,15 @@ const StartGameScreen = (props) => {
 							</View>
 						</Fragment>
 					) : (
+						/* si no es igual, mostrar los intentos restantes*/
 						<Fragment>
 							{attemps >= 1 ? (
 								<Fragment>
-									<Text style={style.title}>
+									<Text style={sg.style.title}>
 										Secciona un número
 									</Text>
 									<Input
-										style={style.input}
+										style={sg.style.input}
 										blurOnSubmit
 										autoCapitalize="none"
 										maxLength={2}
@@ -134,7 +140,7 @@ const StartGameScreen = (props) => {
 										value={enteredValue}
 										keyboardType={"number-pad"}
 									/>
-									<View style={style.buttonContainer}>
+									<View style={sg.style.buttonContainer}>
 										<Button
 											title={"Reiniciar"}
 											onPress={resetGame}
@@ -147,10 +153,10 @@ const StartGameScreen = (props) => {
 								</Fragment>
 							) : (
 								<Fragment>
-									<Text style={style.title}>
+									<Text style={sg.style.title}>
 										Haz perdido :c
 									</Text>
-									<Text style={style.title}>
+									<Text style={sg.style.title}>
 										El número era {chosenNumber}
 									</Text>
 									<Button
@@ -162,77 +168,21 @@ const StartGameScreen = (props) => {
 						</Fragment>
 					)}
 				</Card>
+
 				{selectedNumber === chosenNumber ? null : (
+					// solo mostrar los intentos si no se ha adivinado el número
 					<Fragment>
 						{confirmed ? (
-							<Card style={style.cardChosen}>
+							<Card style={sg.style.cardChosen}>
 								{confirmedOutput}
 							</Card>
 						) : null}
-						<Card style={style.cardChosen}>{attempsOutput}</Card>
+						<Card style={sg.style.cardChosen}>{attempsOutput}</Card>
 					</Fragment>
 				)}
 			</View>
 		</TouchableWithoutFeedback>
 	);
 };
-
-const style = StyleSheet.create({
-	screen: {
-		flex: 1,
-		padding: 10,
-		alignItems: "center",
-		backgroundColor: "#fbecec",
-	},
-	title: {
-		fontSize: 20,
-		marginVertical: 10,
-		alignSelf: "center",
-		paddingBottom: 5,
-	},
-	subtitle: {
-		fontSize: 18,
-		marginVertical: 10,
-		alignSelf: "center",
-		paddingBottom: 5,
-	},
-	buttonContainer: {
-		marginTop: 15,
-		flexDirection: "row",
-		justifyContent: "space-between",
-		paddingHorizontal: 15,
-	},
-	buttonResetGame: {
-		marginTop: 5,
-		flexDirection: "row",
-		alignSelf: "center",
-		paddingHorizontal: 15,
-	},
-	inputContainer: {
-		backgroundColor: "#440047",
-		borderRadius: 10,
-		fontSize: 18,
-		height: "20%",
-	},
-	card: {
-		marginTop: 20,
-		width: "80%",
-		height: "40%",
-		backgroundColor: "#f9ed69",
-	},
-	cardChosen: {
-		marginTop: 20,
-		width: "80%",
-	},
-	input: {
-		width: 60,
-		backgroundColor: "#f6416c",
-		textAlign: "center",
-		alignSelf: "center",
-		borderRadius: 12,
-		color: "white",
-		fontSize: 20,
-	},
-});
 
 export default StartGameScreen;
